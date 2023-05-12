@@ -34,6 +34,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.json = json
 
     def execute(self, context):
+        self.log.info("Getting AWS credentials")
         aws_hook = AwsHook(self.aws_credentials_id)
         credentials = aws_hook.get_credentials()
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
@@ -50,7 +51,9 @@ class StageToRedshiftOperator(BaseOperator):
             credentials.secret_key,
             self.json
         )
+        self.log.info(f"Executing query to copy data from {s3_path} to {self.table}")
         redshift.run(formatted_sql)
+        self.log.info(f"Successfully copy data from {s3_path} to {self.table}")
 
 
 

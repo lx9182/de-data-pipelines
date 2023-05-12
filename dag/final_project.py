@@ -76,7 +76,7 @@ def final_project():
     load_artist_dimension_table = LoadDimensionOperator(
         task_id='Load_artist_dim_table',
         redshift_conn_id="redshift",
-        sql=SqlQueries.artist_table_insert,
+        sql=SqlQueries.artist_table_insert ,
         table="artists",
         append_only=False       
     )
@@ -92,7 +92,13 @@ def final_project():
     run_quality_checks = DataQualityOperator(
         task_id='Run_data_quality_checks',
         redshift_conn_id="redshift",
-        tables=[ "songplays", "songs", "artists",  "time", "users"]
+        dq_checks=[
+            {'check_sql': 'SELECT COUNT(*) FROM songplays WHERE playid IS NULL', 'expected_result': 0},
+            {'check_sql': 'SELECT COUNT(*) FROM songs WHERE songid IS NULL', 'expected_result': 0},
+            {'check_sql': 'SELECT COUNT(*) FROM artists WHERE artistid IS NULL', 'expected_result': 0},
+            {'check_sql': 'SELECT COUNT(*) FROM time WHERE start_time IS NULL', 'expected_result': 0},
+            {'check_sql': 'SELECT COUNT(*) FROM users WHERE userid IS NULL', 'expected_result': 0}
+        ]
     )
 
     end_operator = DummyOperator(task_id='Finish_execution')
